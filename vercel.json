@@ -1,0 +1,9 @@
+{
+    "functions": {
+      "api/blogs": {
+        "memory": 128,
+        "maxDuration": 30
+      }
+    }
+  }
+  
