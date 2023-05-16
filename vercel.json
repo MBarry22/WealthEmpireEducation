@@ -1,0 +1,7 @@
+{
+    "rewrites": [
+      { "source": "/api/blogs", "destination": "/api/blogs/index.js" },
+      { "source": "/api/blogs/:title", "destination": "/api/blogs/[title].js" }
+    ]
+  }
+  
