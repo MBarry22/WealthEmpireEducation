@@ -1,6 +1,10 @@
 {
     "functions": {
-      "api/blogs": {
+      "api/blogs/index.js": {
+        "memory": 128,
+        "maxDuration": 10
+      },
+      "api/blogs/[title].js": {
         "memory": 128,
         "maxDuration": 10
       }
