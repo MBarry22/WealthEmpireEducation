@@ -1,9 +1,7 @@
 {
-    "functions": {
-      "api/blogs": [
-        { "src": "/api/blogs/index.js", "memory": 128, "maxDuration": 10 },
-        { "src": "/api/blogs/[title].js", "memory": 128, "maxDuration": 10 }
-      ]
-    }
+    "rewrites": [
+      { "source": "/api/blogs", "destination": "/api/blogs/index.js" },
+      { "source": "/api/blogs/:title", "destination": "/api/blogs/[title].js" }
+    ]
   }
   
