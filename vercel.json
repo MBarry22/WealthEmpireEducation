@@ -1,13 +1,9 @@
 {
     "functions": {
-      "api/blogs/index.js": {
-        "memory": 128,
-        "maxDuration": 10
-      },
-      "api/blogs/[title].js": {
-        "memory": 128,
-        "maxDuration": 10
-      }
+      "api/blogs": [
+        { "src": "/api/blogs/index.js", "memory": 128, "maxDuration": 10 },
+        { "src": "/api/blogs/[title].js", "memory": 128, "maxDuration": 10 }
+      ]
     }
   }
   
