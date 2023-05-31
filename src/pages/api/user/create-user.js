@@ -1,43 +1,50 @@
 import { MongoClient } from 'mongodb';
-import jwt from 'jsonwebtoken';
 import { hash } from 'bcrypt';
+import NextAuth from 'next-auth';
+import Providers from 'next-auth/providers';
 
-export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    try {
-      // Get the data from the request body
-      const data = req.body;
+const options = {
+  providers: [
+    Providers.Credentials({
+      name: 'Credentials',
+      credentials: {
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        try {
+          // Connect to MongoDB
+          const client = await MongoClient.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+          });
+          const db = client.db();
 
-      // Set the role to "Customer"
-      data.role = 'Customer';
+          // Hash the password
+          const hashedPassword = await hash(credentials.password, 10);
 
-      // Connect to MongoDB
-      const client = await MongoClient.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
-      const db = client.db();
+          // Insert the user data into the "users" collection
+          const result = await db.collection('users').insertOne({
+            username: credentials.username,
+            password: hashedPassword,
+            role: 'Customer',
+          });
 
-      // Hash the password
-      const hashedPassword = await hash(data.password, 10);
+          // Close the database connection
+          client.close();
 
-      // Generate a JWT token as the user ID
-      const token = jwt.sign({ username: data.username, role: data.role }, process.env.JWT_SECRET);
+          // Return the inserted user object
+          return Promise.resolve({ id: result.insertedId, username: credentials.username, role: 'Customer' });
+        } catch (error) {
+          // Handle any errors
+          return Promise.reject(new Error('Internal server error'));
+        }
+      },
+    }),
+  ],
+  pages: {
+    signIn: '/signin',
+  },
+};
 
-      // Insert the user data into the "users" collection with the JWT token as the ID and hashed password
-      const result = await db.collection('users').insertOne({ ...data, _id: token, password: hashedPassword });
-
-      // Close the database connection
-      client.close();
-
-      // Return a JSON response with the JWT token as the ID
-      res.status(201).json({ token });
-    } catch (error) {
-      // Handle any errors
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  } else {
-    // Return an error response for unsupported HTTP methods
-    res.status(405).json({ message: 'Unsupported method' });
-  }
-}
+export default (req, res) => NextAuth(req, res, options);
