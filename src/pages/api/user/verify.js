@@ -1,43 +1,27 @@
-import { verify } from 'jsonwebtoken';
-import { MongoClient } from 'mongodb';
+import jwt from 'jsonwebtoken';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const { token } = req.headers;
+      const { authorization } = req.headers;
 
-      if (!token) {
-        res.status(401).json({ message: 'Missing token' });
+      if (!authorization || !authorization.startsWith('Bearer ')) {
+        res.status(401).json({ message: 'Missing or invalid token' });
         return;
       }
 
-      const decodedToken = verify(token, process.env.JWT_SECRET);
+      const token = authorization.split(' ')[1];
 
-      if (!decodedToken) {
-        res.status(401).json({ message: 'Invalid token' });
-        return;
-      }
-
-      const client = await MongoClient.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
+      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
+        if (err) {
+          res.status(401).json({ message: 'Invalid token' });
+        } else {
+          const { userId } = decodedToken;
+          res.status(200).json({ userId });
+        }
       });
-      const db = client.db();
-
-      const user = await db.collection('users').findOne({ username: decodedToken.username });
-
-      if (!user) {
-        res.status(401).json({ message: 'User not found' });
-      } else {
-        // Retrieve user-specific course information
-        const courses = await db.collection('courses').find({ userId: user._id }).toArray();
-
-        res.status(200).json({ username: user.username, courses });
-      }
-
-      client.close();
     } catch (error) {
-      console.log('Token verification error:', error);
+      console.error('Token verification error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   } else {

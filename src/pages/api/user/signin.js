@@ -1,52 +1,44 @@
-import { compare } from 'bcrypt';
-import { sign } from 'jsonwebtoken';
-import { MongoClient } from 'mongodb';
+import { useRouter } from 'next/router';
+import { signIn } from 'next-auth/client';
 
+export default function SignIn() {
+  const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-export default async function handler(req, res) {
-    if (req.method === 'POST') {
-      try {
-        const { username, password } = req.body;
-  
-        // Connect to MongoDB
-        const client = await MongoClient.connect(process.env.MONGODB_URI, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        });
-        const db = client.db();
-  
-        // Retrieve the user from the database based on the username
-        const user = await db.collection('users').findOne({ username });
-  
-        if (!user) {
-          // User not found
-          res.status(401).json({ message: 'Invalid credentials' });
-        } else {
-          // Compare the provided password with the stored password hash
-          const passwordMatch = await compare(password, user.password);
-  
-          if (!passwordMatch) {
-            // Incorrect password
-            res.status(401).json({ message: 'Invalid credentials' });
-          } else {
-            // Generate the JWT token
-            const token = sign({ username: user.username, role: user.role }, process.env.JWT_SECRET);
-  
-            // Return the JWT token as the response
-            res.status(200).json({ token });
-          }
-        }
-  
-        // Close the database connection
-        client.close();
-      } catch (error) {
-        console.log('Sign-in error:', error);
-        // Handle any errors
-        res.status(500).json({ message: 'Internal server error' });
-      }
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    const result = await signIn('credentials', {
+      username,
+      password,
+      redirect: false,
+    });
+
+    if (result.error) {
+      // Handle sign-in error, such as displaying an error message
+      console.log('Sign-in error:', result.error);
     } else {
-      // Return an error response for unsupported HTTP methods
-      res.status(405).json({ message: 'Unsupported method' });
+      // Redirect to the desired page after successful sign-in
+      router.push('/dashboard');
     }
-  }
-  
+  };
+
+  return (
+    <div>
+      <h1>Sign In</h1>
+      <form onSubmit={handleSignIn}>
+        <label>
+          Username:
+          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+        </label>
+        <br />
+        <label>
+          Password:
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </label>
+        <br />
+        <button type="submit">Sign In</button>
+      </form>
+    </div>
+  );
+}
