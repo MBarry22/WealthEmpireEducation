@@ -1,50 +1,55 @@
 import { MongoClient } from 'mongodb';
-import { hash } from 'bcrypt';
-import NextAuth from 'next-auth';
-import Providers from 'next-auth/providers';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
-const options = {
-  providers: [
-    Providers.Credentials({
-      name: 'Credentials',
-      credentials: {
-        username: { label: 'Username', type: 'text' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        try {
-          // Connect to MongoDB
-          const client = await MongoClient.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-          });
-          const db = client.db();
+const MONGODB_URI = 'mongodb+srv://masonrwporter:SOdARF3FyDVkmSrA@wealthempire.2rah3ym.mongodb.net/';
+const JWT_SECRET = 'LAI@HSD!jsadLSdsadgusaIud3JHS';
 
-          // Hash the password
-          const hashedPassword = await hash(credentials.password, 10);
+// Connect to MongoDB
+async function connectToDatabase() {
+  const client = new MongoClient(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await client.connect();
+  return client.db();
+}
 
-          // Insert the user data into the "users" collection
-          const result = await db.collection('users').insertOne({
-            username: credentials.username,
-            password: hashedPassword,
-            role: 'Customer',
-          });
+// Sign up a new user
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
 
-          // Close the database connection
-          client.close();
+  const { username, password } = req.body;
 
-          // Return the inserted user object
-          return Promise.resolve({ id: result.insertedId, username: credentials.username, role: 'Customer' });
-        } catch (error) {
-          // Handle any errors
-          return Promise.reject(new Error('Internal server error'));
-        }
-      },
-    }),
-  ],
-  pages: {
-    signIn: '/signin',
-  },
-};
+  try {
+    // Connect to MongoDB
+    const db = await connectToDatabase();
+    const usersCollection = db.collection('users');
 
-export default (req, res) => NextAuth(req, res, options);
+    // Check if user already exists
+    const existingUser = await usersCollection.findOne({ username });
+    if (existingUser) {
+      return res.status(409).json({ error: 'User already exists' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const newUser = {
+      username,
+      password: hashedPassword,
+    };
+
+    // Insert the new user into the database
+    const result = await usersCollection.insertOne(newUser);
+
+    // Generate JWT token
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1d' });
+
+    // Return the token as response
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
