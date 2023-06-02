@@ -33,29 +33,29 @@ export default function SignUp() {
     <main className="flex items-center justify-center min-h-screen bg-black">
       <div className="container mx-auto p-8">
         <div className="flex flex-col items-center justify-center mb-8">
-          <h1 className="text-5xl font-bold text-center logo-text py-2">Sign Up</h1>
-          <p className="text-2xl font-bold text-center logo-text ">Create your account</p>
+          <h1 className="text-5xl font-bold text-center logo-text">Sign Up</h1>
+          <p className="text-2xl font-bold text-center logo-text">Create your account</p>
         </div>
 
         <form onSubmit={handleSignUp} className="max-w-md mx-auto">
           <div className="mb-4">
-            <label htmlFor="username" className="block mb-1 text-lg font-medium text-white">Username:</label>
+            <label htmlFor="username" className="block mb-1 text-lg font-medium text-gray-800">Username:</label>
             <input
               type="text"
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500 text-black" 
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500"
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="password" className="block mb-1 text-lg font-medium text-white">Password:</label>
+            <label htmlFor="password" className="block mb-1 text-lg font-medium text-gray-800">Password:</label>
             <input
               type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500 text-black"
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500"
             />
           </div>
           <button
@@ -64,17 +64,16 @@ export default function SignUp() {
           >
             Sign Up
           </button>
-          <div className="mt-8">
-          <p className="text-lg text-gray-600 ">
+        </form>
+
+        <div className="mt-8">
+          <p className="text-lg text-gray-600">
             Already have an account?{' '}
             <Link href="/signin" className="text-blue-500 hover:text-blue-600">
               Sign In
             </Link>
           </p>
         </div>
-        </form>
-
-        
       </div>
     </main>
   );

@@ -11,51 +11,36 @@ export default function Nav() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkUserSignIn = async () => {
+    const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('token');
+        const username = localStorage.getItem('username');
 
-        if (token) {
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; // Set the Authorization header globally
-
-          const response = await axios.get('/api/user/verify');
-
-          if (response.status === 200) {
-            setUsername(response.data.userId); // Update the state with the retrieved username
-          } else {
-            setUsername('');
-          }
+        if (token && username) {
+          setUsername(username);
         } else {
-          setUsername('');
+          // Redirect to the sign-in page if user data is not available
+          router.push('/signin');
         }
       } catch (error) {
-        setUsername('');
-        console.log('User verification error:', error);
+        console.log('Error fetching user data:', error);
+        // Redirect to the sign-in page if an error occurs
+        router.push('/signin');
       }
     };
 
-    checkUserSignIn();
+    fetchUserData();
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      // Clear the token from local storage or cookies
-      // For example, if using local storage:
-      localStorage.removeItem('token');
+  const handleSignOut = () => {
+    // Clear the token and username from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
 
-      // Send a POST request to the sign-out API endpoint
-      await axios.post('/api/user/signout');
-
-      // Clear the username state
-      setUsername('');
-
-      // Redirect to the sign-in page
-      router.push('/signin');
-    } catch (error) {
-      console.log('Sign-out error:', error);
-      // Handle sign-out errors, such as displaying an error message
-    }
+    // Redirect to the sign-in page
+    router.push('/signin');
   };
+
 
   return (
     <nav className="flex items-center justify-between w-full">
@@ -71,9 +56,9 @@ export default function Nav() {
         {username ? (
           <>
             <p className="text-sm font-bold color-white px-4 logo-text">Hello, {username}</p>
-            <button className="text-sm font-bold color-white px-4 logo-text" onClick={handleSignOut}>
-              Sign Out
-            </button>
+            <button onClick={handleSignOut}>
+            <p className="text-sm font-bold color-white px-4 logo-text">Sign out</p>
+          </button>
           </>
         ) : (
           <Link href="/signin">

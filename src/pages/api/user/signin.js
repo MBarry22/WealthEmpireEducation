@@ -1,44 +1,46 @@
-import { useRouter } from 'next/router';
-import { signIn } from 'next-auth/client';
+import { MongoClient } from 'mongodb';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
-export default function SignIn() {
-  const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+// Connect to MongoDB
+async function connectToDatabase() {
+  const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await client.connect();
+  return client.db();
+}
 
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-    const result = await signIn('credentials', {
-      username,
-      password,
-      redirect: false,
-    });
+// Sign in a user
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
 
-    if (result.error) {
-      // Handle sign-in error, such as displaying an error message
-      console.log('Sign-in error:', result.error);
-    } else {
-      // Redirect to the desired page after successful sign-in
-      router.push('/dashboard');
+  const { username, password } = req.body;
+
+  try {
+    // Connect to MongoDB
+    const db = await connectToDatabase();
+    const usersCollection = db.collection('users');
+
+    // Find the user by username
+    const user = await usersCollection.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
-  };
 
-  return (
-    <div>
-      <h1>Sign In</h1>
-      <form onSubmit={handleSignIn}>
-        <label>
-          Username:
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-        </label>
-        <br />
-        <label>
-          Password:
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </label>
-        <br />
-        <button type="submit">Sign In</button>
-      </form>
-    </div>
-  );
+    // Compare the provided password with the stored hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '4000d' });
+
+    // Return the token and user information as response
+    res.status(200).json({ token, user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 }
