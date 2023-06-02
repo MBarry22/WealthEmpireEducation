@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import Image from 'next/image';
-import placeholder from '../pages/components/images/placeholder.png';
-import Link from 'next/link';
 
 export default function SignIn() {
   const [username, setUsername] = useState('');
@@ -14,26 +11,24 @@ export default function SignIn() {
     e.preventDefault();
 
     try {
-      // Send a POST request to the sign-in API endpoint
       const response = await axios.post('/api/user/signin', { username, password });
 
-      // Save the user information to state or global state management
-      const { token, username: signedInUsername } = response.data;
+      const { token, user } = response.data;
+      const { username: signedInUsername } = user;
 
-      // Example using local state:
-      setUsername(signedInUsername);
+      // Save the token and username to localStorage
       localStorage.setItem('token', token);
+      localStorage.setItem('username', signedInUsername);
 
       // Redirect to the home page or the desired destination
       router.push('/');
     } catch (error) {
       console.log('Sign-in error:', error);
-      // Handle sign-in errors, such as displaying an error message
     }
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-100">
+    <main className="flex items-center justify-center min-h-screen bg-black">
       <div className="container mx-auto p-8">
         <div className="flex flex-col items-center justify-center mb-8">
           <h1 className="text-5xl font-bold text-center logo-text">Sign In</h1>
@@ -42,7 +37,9 @@ export default function SignIn() {
 
         <form onSubmit={handleSignIn} className="max-w-md mx-auto">
           <div className="mb-4">
-            <label htmlFor="username" className="block mb-1 text-lg font-medium text-gray-800">Username:</label>
+            <label htmlFor="username" className="block mb-1 text-lg font-medium text-gray-800">
+              Username:
+            </label>
             <input
               type="text"
               id="username"
@@ -52,7 +49,9 @@ export default function SignIn() {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="password" className="block mb-1 text-lg font-medium text-gray-800">Password:</label>
+            <label htmlFor="password" className="block mb-1 text-lg font-medium text-gray-800">
+              Password:
+            </label>
             <input
               type="password"
               id="password"
@@ -68,15 +67,6 @@ export default function SignIn() {
             Sign In
           </button>
         </form>
-
-        <div className="mt-8">
-          <p className="text-lg text-gray-600">
-            Don't have an account?{' '}
-            <Link href="/signup" className="text-blue-500 hover:text-blue-600">
-              Sign Up
-            </Link>
-          </p>
-        </div>
       </div>
     </main>
   );

@@ -1,30 +1,27 @@
 import jwt from 'jsonwebtoken';
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    try {
-      const { authorization } = req.headers;
+    try{
+      // Retrive the token from the request headers
+      const token = req.headers.authorization?.replace('Bearer ', '');
 
-      if (!authorization || !authorization.startsWith('Bearer ')) {
-        res.status(401).json({ message: 'Missing or invalid token' });
-        return;
+      if(!token){
+        return res.status(401).json({ error: 'Missing auth token' });
       }
 
-      const token = authorization.split(' ')[1];
-
-      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
-        if (err) {
-          res.status(401).json({ message: 'Invalid token' });
-        } else {
-          const { userId } = decodedToken;
-          res.status(200).json({ userId });
+      // Verify the token using the JWT_SECRET from .env.local
+      jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
+        if(error){
+          return res.status(401).json({ error: 'Invalid auth token' });
         }
-      });
-    } catch (error) {
-      console.error('Token verification error:', error);
-      res.status(500).json({ message: 'Internal server error' });
+
+        // Return the decoded token
+        res.status(200).json({ userId: decoded.userId });
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+
     }
-  } else {
-    res.status(405).json({ message: 'Unsupported method' });
   }
-}
