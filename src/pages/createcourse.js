@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export default function CreateCourse() {
   const [courseTitle, setCourseTitle] = useState('');
-  const [sections, setSections] = useState([{ title: '', questions: [{ question: '', possibleAnswers: [''], correctAnswerIndex: null, userAnswer: '' }] }]);
+  const [sections, setSections] = useState([{ title: '', questions: [{ question: '', possibleAnswers: [{ text: '', isCorrect: false }] }] }]);
 
   const handleSectionTitleChange = (index, event) => {
     const updatedSections = [...sections];
@@ -19,35 +19,29 @@ export default function CreateCourse() {
 
   const handleAnswerChange = (sectionIndex, questionIndex, answerIndex, event) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].questions[questionIndex].possibleAnswers[answerIndex] = event.target.value;
+    updatedSections[sectionIndex].questions[questionIndex].possibleAnswers[answerIndex].text = event.target.value;
     setSections(updatedSections);
   };
 
-  const handleCorrectAnswerChange = (sectionIndex, questionIndex, answerIndex) => {
+  const handleCorrectAnswerChange = (sectionIndex, questionIndex, answerIndex, event) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].questions[questionIndex].correctAnswerIndex = answerIndex;
-    setSections(updatedSections);
-  };
-
-  const handleUserAnswerChange = (sectionIndex, questionIndex, event) => {
-    const updatedSections = [...sections];
-    updatedSections[sectionIndex].questions[questionIndex].userAnswer = event.target.value;
+    updatedSections[sectionIndex].questions[questionIndex].possibleAnswers[answerIndex].isCorrect = event.target.checked;
     setSections(updatedSections);
   };
 
   const handleAddSection = () => {
-    setSections([...sections, { title: '', questions: [{ question: '', possibleAnswers: [''], correctAnswerIndex: null, userAnswer: '' }] }]);
+    setSections([...sections, { title: '', questions: [{ question: '', possibleAnswers: [{ text: '', isCorrect: false }] }] }]);
   };
 
   const handleAddQuestion = (sectionIndex) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].questions.push({ question: '', possibleAnswers: [''], correctAnswerIndex: null, userAnswer: '' });
+    updatedSections[sectionIndex].questions.push({ question: '', possibleAnswers: [{ text: '', isCorrect: false }] });
     setSections(updatedSections);
   };
 
   const handleAddAnswer = (sectionIndex, questionIndex) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].questions[questionIndex].possibleAnswers.push('');
+    updatedSections[sectionIndex].questions[questionIndex].possibleAnswers.push({ text: '', isCorrect: false });
     setSections(updatedSections);
   };
 
