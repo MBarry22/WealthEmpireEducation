@@ -3,17 +3,22 @@ import { MongoClient, ObjectId } from 'mongodb';
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     // Get the data from the request body
-    const { title, sections } = req.body;
+    const { title, description, adminId } = req.body;
 
     // Connect to MongoDB
     const client = await MongoClient.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
     const db = client.db();
 
-    // Create a new course document with sections
-    const result = await db.collection('courses').insertOne({
+    // Create a new course document
+    const newCourse = {
       title,
-      sections,
-    });
+      description,
+      admin: ObjectId(adminId), // Convert adminId to ObjectId
+      enrolledUsers: [],
+    };
+
+    // Insert the new course document into the "courses" collection
+    const result = await db.collection('courses').insertOne(newCourse);
 
     // Close the database connection
     client.close();

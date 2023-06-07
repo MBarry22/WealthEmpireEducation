@@ -6,6 +6,7 @@ import Link from 'next/link';
 export default function SignUp() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(''); 
   const router = useRouter();
 
   const handleSignUp = async (e) => {
@@ -13,7 +14,7 @@ export default function SignUp() {
 
     try {
       // Send a POST request to the sign-up API endpoint
-      const response = await axios.post('/api/user/create-user', { username, password });
+      const response = await axios.post('/api/user/create-user', { username, password, email });
 
       // Save the user information to state or global state management
       const { token } = response.data;
@@ -38,6 +39,16 @@ export default function SignUp() {
         </div>
 
         <form onSubmit={handleSignUp} className="max-w-md mx-auto">
+        <div className="mb-4">
+            <label htmlFor="email" className="block mb-1 text-lg font-medium text-gray-800 ">Email:</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500 text-black"
+            />
+          </div>
           <div className="mb-4">
             <label htmlFor="username" className="block mb-1 text-lg font-medium text-gray-800">Username:</label>
             <input
@@ -45,7 +56,7 @@ export default function SignUp() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500 text-black"
             />
           </div>
           <div className="mb-4">
@@ -55,7 +66,7 @@ export default function SignUp() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-blue-500 text-black"
             />
           </div>
           <button
