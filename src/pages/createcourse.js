@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function CreateCourse() {
@@ -64,6 +64,25 @@ export default function CreateCourse() {
       // Handle error state or display an error message
     }
   };
+
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      try {
+        // Make a request to your API or authentication server to check the user's role
+        const response = await fetch('/api/user/check-admin-role');
+
+        if (response.status !== 200) {
+          // User does not have the Admin role, redirect to home page
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('Error checking user role:', error);
+        // Handle error state or display an error message
+      }
+    };
+
+    checkAdminRole();
+  }, []);
 
   return (
     <div className="container mx-auto">
