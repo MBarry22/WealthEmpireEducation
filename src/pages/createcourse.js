@@ -70,17 +70,17 @@ export default function CreateCourse() {
       try {
         // Make a request to your API or authentication server to check the user's role
         const response = await fetch('/api/user/check-admin-role');
-
+  
         if (response.status !== 200) {
-          // User does not have the Admin role, redirect to home page
-          window.location.href = '/';
+          // User does not have the Admin role
+          setSections([]); // Clear sections or handle differently
         }
       } catch (error) {
         console.error('Error checking user role:', error);
         // Handle error state or display an error message
       }
     };
-
+  
     checkAdminRole();
   }, []);
 
